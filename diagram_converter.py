@@ -34,9 +34,6 @@ class Node:
         """
         Get the jump phrase from the comment
         """
-        if not comment:
-            return ""
-            
         try:
             comments_array = self.comment
             jump = ""
@@ -86,6 +83,8 @@ class Connection:
         self.source = source
         self.target = target
         self.arrow_text = arrow_text
+    def __repr__(self):
+        return f"Connection(source={self.source}, target={self.target}, arrow_text={self.arrow_text})"
 
 def convert_lucid_diagram_to_md(diagram_json):
     """
@@ -150,7 +149,9 @@ def convert_lucid_diagram_to_md(diagram_json):
                 while target_queue:
                     connection_info, level = target_queue.pop(0) 
                     target = nodes[connection_info.target]
-                    
+                    if target.hide():
+                        print(f"Hiding {target.id}")
+                        continue
                     if target.type == 'decision':
                         '''
                         If the target is a decision, we iterate over the NO path.  And the yes 
@@ -170,7 +171,7 @@ def convert_lucid_diagram_to_md(diagram_json):
                                         decisions.append(
                                             "".join([
                                                 "\t" * level , 
-                                                f"- not {decision_text}?", 
+                                                f"- {add_not(decision_text)}?", 
                                                 " goto ",
                                                 target_target.text , 
                                                 f" section. say: \"{target_target.jump()}\""
@@ -214,7 +215,17 @@ def convert_lucid_diagram_to_md(diagram_json):
                             
     return '\n'.join(output)
 
-
+def add_not(decision_text):
+    '''
+    Add "not" to the decision text if it is not already there.
+    If the decision text contains "If", then we add "not" to the "If" part.
+    If the decision text does not contain "If", then we add "not" to the beginning of the text.
+    '''
+    if "If" in decision_text:
+        pieces = decision_text.split("If")
+        return pieces[0] + "If not " + 'if '.join(pieces[1:])
+    else:
+        return decision_text
 
 def read_diagram_file(filename):
     """
@@ -247,7 +258,10 @@ def read_diagram_file(filename):
             elif 'Page' in row['Name']:
                 continue
             elif 'Line' in row['Name']:
-                continue
+                shape['type'] = 'connector'
+                shape['arrow_text'] = row['Text Area 1']
+                shape['source'] = row['Line Source']
+                shape['target'] = row['Line Destination']
             elif 'Document' in row['Name']:
                 continue
             elif 'Text' in row['Name']:
