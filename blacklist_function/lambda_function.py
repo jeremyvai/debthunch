@@ -333,11 +333,6 @@ def submit_lead_handler(event):
 
         required_fields = [
             'campaign_id', 
-            'pin', 
-            'first_name', 
-            'last_name', 
-            'annual_income', 
-            'email', 
             'phone'
         ]
         
@@ -353,7 +348,8 @@ def submit_lead_handler(event):
         url = f'https://{ENDPOINT}/taalk/submit'
         if 'pin' in body and body['pin']:
             body['pin'] = clean_up_pin(body['pin'])
-        body['annual_income'] = clean_up_money_number(body['annual_income'])
+        if 'annual_income' in body:
+            body['annual_income'] = clean_up_money_number(body['annual_income'])
         if 'unsecured_debt' in body:
             body['unsecured_debt'] = clean_up_money_number(body['unsecured_debt'])
         if 'postcode' in body:
