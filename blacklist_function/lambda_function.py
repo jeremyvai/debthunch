@@ -225,7 +225,7 @@ def lead_lookup_handler(event):
             return {
                 'statusCode': 200,
                 'body': json.dumps({
-                    'script': '~I did not find a record.  I can still assist you. I just need to verify your information. May I have your first and last name?',
+                    'script': '~I did not find a record.  I can still assist you. Do you currently have at least fifteen thousand dollars in debt?',
                     'personFound' : False
                 })
             }
@@ -240,7 +240,7 @@ def lead_lookup_handler(event):
                     'phone_number': data.get('phone_numbers', [{}])[0].get('number',''),
                     'email_address': data.get('email_addresses', [{}])[0].get('email_address'),
                     'address': data.get('addresses', [{}])[0].get('address'),
-                    'script' : "Excellent! I just need to verify your information. May I have your first and last name?",
+                    'script' : "Got it! I found your personal key.That's all I needed. Please hold the line while I get you connected to a debt consolidation expert. I am transferring you now.",
                     'personFound' : True,
                     'dbg_url_used' : f'https://{ENDPOINT}/lead/lookup'
                     }
@@ -333,11 +333,6 @@ def submit_lead_handler(event):
 
         required_fields = [
             'campaign_id', 
-            'pin', 
-            'first_name', 
-            'last_name', 
-            'annual_income', 
-            'email', 
             'phone'
         ]
         
@@ -353,7 +348,8 @@ def submit_lead_handler(event):
         url = f'https://{ENDPOINT}/taalk/submit'
         if 'pin' in body and body['pin']:
             body['pin'] = clean_up_pin(body['pin'])
-        body['annual_income'] = clean_up_money_number(body['annual_income'])
+        if 'annual_income' in body:
+            body['annual_income'] = clean_up_money_number(body['annual_income'])
         if 'unsecured_debt' in body:
             body['unsecured_debt'] = clean_up_money_number(body['unsecured_debt'])
         if 'postcode' in body:
@@ -361,7 +357,7 @@ def submit_lead_handler(event):
         if 'date_of_birth' in body:
             body['date_of_birth'] = clean_up_date_of_birth(body.get('date_of_birth', ''))
 
-        default_transfer_number = event.get('queryStringParameters', {}).get('default_transfer_number', '+19165072069')
+        default_transfer_number = event.get('queryStringParameters', {}).get('default_transfer_number', '+19498286101')
 
         print( "url for taalk/submit", url)
         print("body for taalk/submit", body)
